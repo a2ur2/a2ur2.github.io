@@ -163,6 +163,66 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2023/01/21/kernel-ret2dir/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/21/kernel-ret2dir/" class="post-title-link" itemprop="url">kernel-ret2dir</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-21 00:56:37 / 修改时间：00:57:43" itemprop="dateCreated datePublished" datetime="2023-01-21T00:56:37+08:00">2023-01-21</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>kernel之ret2dir</p>
+<p><a target="_blank" rel="noopener" href="https://r441qjbasa.feishu.cn/docx/YVcrdd4QPoA9Ehx3M8ycbq2wnUg">https://r441qjbasa.feishu.cn/docx/YVcrdd4QPoA9Ehx3M8ycbq2wnUg</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/12/24/[Kernel]ROP%E4%BB%A5%E5%8F%8Aret2usr/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -778,79 +838,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/11/fastbin%20attacked/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/11/fastbin%20attacked/" class="post-title-link" itemprop="url">fastbin attacked</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-11 00:00:00" itemprop="dateCreated datePublished" datetime="2022-04-11T00:00:00+08:00">2022-04-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-22 21:58:33" itemprop="dateModified" datetime="2022-04-22T21:58:33+08:00">2022-04-22</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="fastbin-attacked"><a href="#fastbin-attacked" class="headerlink" title="fastbin attacked"></a>fastbin attacked</h1><h2 id="一、什么是fastbin"><a href="#一、什么是fastbin" class="headerlink" title="一、什么是fastbin"></a>一、什么是fastbin</h2><p>在glibc的堆块管理中，为了加快堆块分配的效率，会使用bins来管理分配了之后又释放的空闲堆块，当用户分配内存时，系统会先从bins里面寻找是否有合适大小的堆块，如果没有再考虑另外的分配方式（如top chunk切割等）。fastbin就是这样的一个bins，当大小在0x20~0x80的堆块被释放后就会进入fastbin。fastbin使用的是单链表链接的方式保存堆块，而且单条链表中的chunk大小是一致的。</p>
-<p>在主线程中会存在一个名为fastbinY的全局变量数组，大小为7，用于存放fastbin单个链表的头指针</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/11/fastbin%20attacked/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -920,14 +907,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -954,7 +941,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

