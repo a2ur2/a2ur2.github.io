@@ -163,6 +163,69 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2023/02/26/kernel-UAF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/02/26/kernel-UAF/" class="post-title-link" itemprop="url">kernel_UAF</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-02-26 22:58:10 / 修改时间：23:03:24" itemprop="dateCreated datePublished" datetime="2023-02-26T22:58:10+08:00">2023-02-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><a target="_blank" rel="noopener" href="https://oa0j4dqwza.feishu.cn/docx/YRD4dVOu2owin9xK2HdcTGvfnvY">https://oa0j4dqwza.feishu.cn/docx/YRD4dVOu2owin9xK2HdcTGvfnvY</a></p>
+<h1 id="【kernel】UAF"><a href="#【kernel】UAF" class="headerlink" title="【kernel】UAF"></a>【kernel】UAF</h1><p>有关UAF的题目和内容应该都会放在这(x</p>
+<p>希望我真能懂UAF捏0r2</p>
+<h2 id="初探UAF"><a href="#初探UAF" class="headerlink" title="初探UAF"></a>初探UAF</h2><p>通过babydrive，利用tty_struct初探kernel中UAF的利用方法</p>
+<p><a target="_blank" rel="noopener" href="https://oa0j4dqwza.feishu.cn/docx/YRD4dVOu2owin9xK2HdcTGvfnvY">https://oa0j4dqwza.feishu.cn/docx/YRD4dVOu2owin9xK2HdcTGvfnvY</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2023/01/21/kernel-ret2dir/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -766,78 +829,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="A2ur2">
-      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="A2ur2的梦想小屋">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/" class="post-title-link" itemprop="url">今日学习碎片</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-20 00:00:00" itemprop="dateCreated datePublished" datetime="2022-04-20T00:00:00+08:00">2022-04-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-04-22 22:00:15" itemprop="dateModified" datetime="2022-04-22T22:00:15+08:00">2022-04-22</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>最近这段时间，感觉没有说系统的学习一个bin的attack，而是卡在了一题heap的题目，反复调试下也是掌握了一些零碎的但未曾接触过的知识。最近的学习状态有点迷，感觉自己的兴趣和热情被消耗的过多，容易去担忧自己未来能不能找到一个让自己满意的工作，怕自己能力和天赋不足，怕付出和收获不成正比。emo下，进入正题，分享一道简单堆题</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -907,7 +898,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
