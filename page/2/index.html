@@ -163,6 +163,79 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/" class="post-title-link" itemprop="url">stdout，tcache和exit hook一锅端</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-25 19:29:14" itemprop="dateCreated datePublished" datetime="2022-05-25T19:29:14+08:00">2022-05-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-26 19:45:33" itemprop="dateModified" datetime="2022-05-26T19:45:33+08:00">2022-05-26</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>时隔一个月某有更新博客了，上一次搞那个patchelf调了快半个星期没弄好之后心态大崩，一下子动力失去，直接摆烂了一整个五一。五一过后没多久，被uuu师傅狠狠的打击到了orz，又捡起来了继续pwn。然后紧接着就是省赛，看了下去年的省赛两题都是2.31的堆，都是没有输出函数要打stdout去输出，最后劫持tcache去getshell，当时一看差点直接晕厥，后面一个多星期速成完了tcache和stdout输出，对这两个技巧有了大致了解后就是五月的das了，又是stdout输出（</p>
+<p>直接赶趟了，一篇博客一道题搞完劫持stdout还有最后利用tcache劫持到exit hook完成getshell</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/05/25/%E5%88%9D%E6%8E%A2IO%20FILE%E4%BB%A5%E5%8F%8A%E5%85%B3%E4%BA%8Eexit%20hook%E7%9A%84%E5%88%A9%E7%94%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2022/04/20/%E8%BF%91%E6%97%A5%E5%AD%A6%E4%B9%A0%E7%A2%8E%E7%89%87/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -445,7 +518,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
